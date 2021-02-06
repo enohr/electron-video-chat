@@ -1,0 +1,30 @@
+main {
+    height: 100vh;
+    display: flex;
+}
+
+main-left {
+    flex: 0.7;
+    
+}
+
+#video-grid {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+video {
+    height: 300px;
+    width: 400px;
+    object-fit: cover;
+    padding: 8px;
+}
+
+.video-area {
+    flex-grow: 1;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
