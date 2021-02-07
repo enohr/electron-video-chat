@@ -1,6 +1,12 @@
+// initial class to be called by screen.
+
 const onload = () => {
 
-    console.log(`entrou`);
+
+
+     // 1- get camera
+
+
 
 }
 
