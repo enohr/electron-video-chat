@@ -1,9 +1,16 @@
-main {
-    height: 100vh;
-    display: flex;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-main-left {
+.main {
+    height: 100vh;
+    display: flex;
+    background-color: #23282B;
+}
+
+.main-left {
     flex: 0.7;
     
 }

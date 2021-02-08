@@ -4,8 +4,10 @@ const onload = () => {
 
 
 
-     // 1- get camera
-
+     const media = new Media();
+     const view = new View();
+     Main.init({media, view});
+     
 
 
 }

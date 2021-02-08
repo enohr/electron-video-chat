@@ -2,7 +2,23 @@
 class Main {
 
     // constructor will receive all needed objects
-    constructor() {
+    constructor({media, view}) {
+        this.media = media;
+        this.view = view;
+    }
+
+    static init(params) {
+        console.log(params);
+        const main = new Main(params);
+        main._init();
+    }
+
+    async _init() {
+        const myDevices = await this.media.getDevices();
+
+        console.log(myDevices);
+
+        this.view.addCameraToScreen(myDevices);
 
     }
 
