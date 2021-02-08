@@ -7,6 +7,7 @@ class Main {
         this.view = view;
     }
 
+
     static init(params) {
         console.log(params);
         const main = new Main(params);
@@ -15,11 +16,16 @@ class Main {
 
     async _init() {
         const myDevices = await this.media.getDevices();
-
-        console.log(myDevices);
+        // const screen = await this.media.getScreenShare();
 
         this.view.addCameraToScreen(myDevices);
+        
+        
+        
+        this.view.onLeaveClicked();
 
     }
+
+
 
 }
