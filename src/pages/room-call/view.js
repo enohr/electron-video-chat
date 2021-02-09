@@ -10,23 +10,40 @@ class View {
         return video;
     }
 
-    addCameraToScreen(stream) {
+    addCameraToScreen(stream, userId) {
         const div = document.createElement("div");
+        const h1 = document.createElement("h1");
         const video = this.createVideoElement(stream);
         const video_grid = document.querySelector(".video-grid");
 
+        h1.innerText = userId;
         div.classList.add("video-wrapper");
+        div.id = `userid-${userId}`
         div.append(video);
+        div.append(h1);
         video_grid.append(div);
     }
 
 
     onLeaveClicked() {
-        const leaveButton = document.getElementById("leave")
+        const leaveButton = document.getElementById("leave-button")
         console.log(leaveButton);
         leaveButton.addEventListener('click', () => {
             window.close();
         })
     }
 
+    removeVideo(userId) {
+        const video_wrapper = document.getElementById(`userid-${userId}`);
+        video_wrapper.remove();
+    }
+
+    // TODO: Toggle camera active / inactive 
+    onCameraClicked() {
+        const cameraButton = document.getElementById('camera-button')
+        cameraButton.addEventListener('click', () => {
+
+            this.removeVideo("my-id");
+        })
+    }
 }

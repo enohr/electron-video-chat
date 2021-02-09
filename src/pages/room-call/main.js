@@ -5,6 +5,8 @@ class Main {
     constructor({media, view}) {
         this.media = media;
         this.view = view;
+
+        this.isMyCameraActive = false;
     }
 
 
@@ -18,13 +20,16 @@ class Main {
         const myDevices = await this.media.getDevices();
         // const screen = await this.media.getScreenShare();
 
-        this.view.addCameraToScreen(myDevices);
-        
-        
+        this.view.addCameraToScreen(myDevices, "my-id");
+        this.isMyCameraActive = true;
         
         this.view.onLeaveClicked();
-
+        this.view.onCameraClicked();
     }
+
+
+
+
 
 
 

@@ -36,22 +36,28 @@ video {
     padding: 40px;
 }
 
-.wrapper{
+.video-wrapper{
     position: relative
 }
-.wrapper video{
+.video-wrapper video{
     position: relative;
     z-index: 100;
     border-radius: 10px;
 
 }
-.wrapper div{
+.video-wrapper div{
     position: absolute;
     display: block;
     z-index: 150;
     left: 10px;
     bottom: 10px;
     color: white;
+}
+
+.video-wrapper h1 {
+    color: #DDD;
+    text-align: center;
+    font-size: 14px;
 }
 
 
@@ -66,7 +72,7 @@ video {
     align-items: center;
 }
 
-#leave {
+#leave-button {
     padding: 20px;
     background-color: rgb(180, 20, 20);
     color: #EEE;
