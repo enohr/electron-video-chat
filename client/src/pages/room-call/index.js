@@ -3,6 +3,12 @@
 const onload = () => {
 
 
+     // const peer = new Peer();
+     const socket = require('socket.io-client');
+     const io = socket.connect("http://localhost:3000");
+
+     console.log(io);
+     
 
      const media = new Media();
      const view = new View();
