@@ -8,7 +8,12 @@ app.get('/', (req, res) => {
 
 
 io.on('connection', socket => {
-    console.log(socket);
+    socket.on('join-room', (roomId, id) => {
+        console.log(`Client:${id} joined the room`)
+        socket.join(roomId)
+        socket.to(roomId).emit('new-user', id)
+    })
+    
 })
 
 http.listen(3000);
