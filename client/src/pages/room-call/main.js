@@ -2,20 +2,22 @@
 class Main {
 
     // constructor will receive all needed objects
-    constructor({media, view, peer, socket, roomId}) {
+    constructor({media, view, socket, roomId}) {
         this.media = media;
         this.view = view;
-        this.peer = peer;
         this.socket = socket;
         this.roomId = roomId;
         this.myStream = null;
+                
+        this.peer = null;
         this.isMyCameraActive = false;
     }
 
 
     static init(params) {
         const main = new Main(params);
-        main._init();
+
+        return main._init();
     }
 
     async _init() {
@@ -23,31 +25,43 @@ class Main {
         
         // const screen = await this.media.getScreenShare();
 
-        // this.view.addCameraToScreen(this.myStream, "my-id");
+        this.view.addCameraToScreen(this.myStream, this.myStream.id);
 
 
         this.isMyCameraActive = true;
-        this.events();
+        this.peerEvents();
         this.view.onLeaveClicked();
         this.view.onCameraClicked();
     }
 
 
-    events() {
+    peerEvents() {
+        // Create a peer model in future. testing the api right now
+
+
+        this.peer = new Peer(undefined, {
+            host: 'localhost',
+            path: '/',
+            port: '3001'
+        });
+     
         this.peer.on('open', (id) => {
-            // Only one peer enters. why?
             this.socket.emit('join-room', this.roomId, id)
        })
   
        this.socket.on('new-user', userId => {
-            console.log("userId", userId);
             const call = this.peer.call(userId, this.myStream);
-            console.log(call);
+            call.on('stream', stream => {
+                this.view.addCameraToScreen(stream, stream.id);
+            })
        })
   
        this.peer.on('call', call => {
             console.log("call", call);
             call.answer(this.myStream);
+            call.on('stream', stream => {
+                this.view.addCameraToScreen(stream, stream.id);
+            })
        })
     }
 
