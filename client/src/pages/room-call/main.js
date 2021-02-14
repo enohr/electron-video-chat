@@ -23,9 +23,9 @@ class Main {
     async _init() {
         this.myStream = await this.media.getDevices();
         
-        // const screen = await this.media.getScreenShare();
-
+        const screen = await this.media.getScreenShare();
         this.view.addCameraToScreen(this.myStream, this.myStream.id);
+        this.view.addCameraToScreen(screen, screen.id);
 
 
         this.isMyCameraActive = true;
