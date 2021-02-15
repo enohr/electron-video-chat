@@ -12,7 +12,12 @@ io.on('connection', socket => {
         console.log(`Client:${id} joined the room`)
         socket.join(roomId)
         socket.to(roomId).emit('new-user', id)
+        socket.on('disconnect', () => {
+            console.log(`Client:${id} left the room`)
+            socket.to(roomId).emit('user-disconnected', id)
+        })
     })
+
     
 })
 

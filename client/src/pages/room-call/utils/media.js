@@ -1,19 +1,19 @@
-const { desktopCapturer } = require('electron')
-
-
+const { desktopCapturer, remote } = require('electron')
+const { Menu } = remote
 class Media {
     async getDevices(video = true, audio = true) {
         return navigator.mediaDevices.getUserMedia({video, audio});
     }
 
     async getScreenShare() {
-        const screenChoosed = await this.chooseSource();
+
+        const source = await this.chooseSource();
         const displayMediaOptions = {
             audio: false,
             video: {
               mandatory: {
                 chromeMediaSource: 'desktop',
-                chromeMediaSourceId: screenChoosed.id,
+                chromeMediaSourceId: source.id,
                 minWidth: 1280,
                 maxWidth: 1280,
                 minHeight: 720,
@@ -31,9 +31,14 @@ class Media {
     async chooseSource() {
         const sources = await this.getSources();
         // build a menu to choose sources
-
-
-        return sources[0];
-    }
-
+        const videoOptionsMenu = Menu.buildFromTemplate(
+            sources.map(source => {
+              return {
+                label: source.name,
+                click: () => {this.getDevices(source)}
+              };
+            })
+          );
+            videoOptionsMenu.popup();
+      }
 }
