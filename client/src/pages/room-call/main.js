@@ -33,7 +33,8 @@ class Main {
         this.view.addCameraToScreen(this.myStream, this.peer.id);
  
         this.view.onLeaveClicked();
-        this.view.onCameraClicked();
+        // this.view.onCameraClicked(this.peer.id);
+        this.onMicrophoneClicked()
     }
 
     async initPeer() {
@@ -46,6 +47,13 @@ class Main {
         });
 
         return this.peerEvents(peer);
+    }
+
+    onMicrophoneClicked() {
+        const cameraButton = document.getElementById('microphone-button')
+        cameraButton.addEventListener('click', () => {
+            this.myStream.getAudioTracks()[0].enabled = !this.myStream.getAudioTracks()[0].enabled
+        })
     }
 
 
