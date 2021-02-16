@@ -30,10 +30,10 @@ class Main {
         this.peer = await this.initPeer();
 
         this.myStream = await this.media.getDevices();
-        this.view.addCameraToScreen(this.myStream, this.peer.id);
- 
+        this.addStreamToScreen();
+        
         this.view.onLeaveClicked();
-        // this.view.onCameraClicked(this.peer.id);
+        this.onCameraClicked();
         this.onMicrophoneClicked()
     }
 
@@ -56,6 +56,18 @@ class Main {
         })
     }
 
+    addStreamToScreen(stream = this.myStream, peerId = this.myPeerId) {
+        const isCurrentUser = this.myPeerId == peerId;
+        this.view.addCameraToScreen(stream, peerId, isCurrentUser);
+}
+
+    onCameraClicked() {
+        const cameraButton = document.getElementById('camera-button')
+        cameraButton.addEventListener('click', () => {
+            this.myStream.getVideoTracks()[0].enabled = !this.myStream.getVideoTracks()[0].enabled
+        })
+    }
+
 
     async peerEvents(peer) {
         // Create a peer model in future. testing the api right now
@@ -71,7 +83,7 @@ class Main {
             }
 
             call.on('stream', stream => {
-                this.view.addCameraToScreen(stream, userId);
+                this.addStreamToScreen(stream, userId);
             })
        })
 
@@ -87,7 +99,7 @@ class Main {
                     return;
                 } 
                 this.peers.push(stream.id);
-                this.view.addCameraToScreen(stream, call.peer);
+                this.addStreamToScreen(stream, call.peer);
             })
        })
 
@@ -98,7 +110,7 @@ class Main {
     //     const btnScreenShare = document.getElementById('screen-button');
     //     btnScreenShare.addEventListener('click', async () => {
     //             this.myScreen = await this.media.chooseSource();
-    //             this.view.addCameraToScreen(this.myScreen, this.myScreen.id);
+    //             this.addStreamToScreen(this.myScreen, this.myScreen.id);
     //     })
     // }
 

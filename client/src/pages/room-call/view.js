@@ -10,7 +10,7 @@ class View {
         return video;
     }
 
-    addCameraToScreen(stream, userId) {
+    addCameraToScreen(stream, userId, isCurrentUser) {
         const div = document.createElement("div");
         const h1 = document.createElement("h1");
         const video = this.createVideoElement(stream);
@@ -22,6 +22,11 @@ class View {
         div.append(video);
         div.append(h1);
         video_grid.append(div);
+
+        if (isCurrentUser) {
+            video.muted = true;
+            h1.id = 'current-user';
+        }
     }
 
 
@@ -36,14 +41,5 @@ class View {
     removeVideo(userId) {
         const video_wrapper = document.getElementById(`userid-${userId}`);
         video_wrapper.remove();
-    }
-
-    // TODO: Toggle camera active / inactive 
-    onCameraClicked() {
-        const cameraButton = document.getElementById('camera-button')
-        cameraButton.addEventListener('click', () => {
-
-            this.removeVideo("my-id");
-        })
     }
 }

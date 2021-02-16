@@ -60,6 +60,12 @@ video {
     font-size: 14px;
 }
 
+#current-user {
+    font-weight: bold;
+    color: rgb(72, 186, 206);
+    font-size: 16px;
+}
+
 
 .controls {
     position: fixed;
