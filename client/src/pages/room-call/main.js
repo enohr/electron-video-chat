@@ -37,6 +37,7 @@ class Main {
         this.onCameraClicked();
         this.onMicrophoneClicked()
         this.screenClicked();
+        this.sourceSelected();
     }
 
     async initPeer() {
@@ -113,6 +114,15 @@ class Main {
         btnScreenShare.addEventListener('click', async () => {
             ipcRenderer.send('open-modal');
             // We cant send the sources on ipcRenderer.send cause this throw an exception. It doesnt support to send DOM objects.
+        })
+
+
+    }
+
+    sourceSelected() {
+        ipcRenderer.on('screen-source', async (_, {source}) => {
+            this.myScreen = await this.media.getScreenShare(source);
+            this.addStreamToScreen(this.myScreen)
         })
     }
 

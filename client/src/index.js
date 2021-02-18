@@ -46,6 +46,10 @@ app.on('activate', () => {
 })
 
 ipcMain.on('open-modal', (_, items) => {
-  console.log(items)
   modalScreen.show();
+})
+
+ipcMain.on('source-selected', (_, source) => {
+  win.webContents.send('screen-source', source)
+  modalScreen.close();
 })

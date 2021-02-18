@@ -5,15 +5,13 @@ class Media {
         return navigator.mediaDevices.getUserMedia({video, audio});
     }
 
-    async getScreenShare() {
-
-        const source = await this.chooseSource();
+    async getScreenShare(source) {
         const displayMediaOptions = {
             audio: false,
             video: {
               mandatory: {
                 chromeMediaSource: 'desktop',
-                chromeMediaSourceId: source.id,
+                chromeMediaSourceId: source,
                 minWidth: 1280,
                 maxWidth: 1280,
                 minHeight: 720,
@@ -27,18 +25,4 @@ class Media {
     async getSources() {
         return await desktopCapturer.getSources({ types: ['window', 'screen'] });
     }
-
-    async chooseSource() {
-        const sources = await this.getSources();
-        // build a menu to choose sources
-        const videoOptionsMenu = Menu.buildFromTemplate(
-            sources.map(source => {
-              return {
-                label: source.name,
-                click: () => {this.getDevices(source)}
-              };
-            })
-          );
-            videoOptionsMenu.popup();
-      }
 }
