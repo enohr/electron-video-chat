@@ -1,4 +1,5 @@
 // class to organize what method will be called.
+const { ipcRenderer } = require('electron')
 class Main {
 
     // constructor will receive all needed objects
@@ -35,6 +36,7 @@ class Main {
         this.view.onLeaveClicked();
         this.onCameraClicked();
         this.onMicrophoneClicked()
+        this.screenClicked();
     }
 
     async initPeer() {
@@ -106,12 +108,12 @@ class Main {
        return peer;
     }
 
-    // screenClicked() {
-    //     const btnScreenShare = document.getElementById('screen-button');
-    //     btnScreenShare.addEventListener('click', async () => {
-    //             this.myScreen = await this.media.chooseSource();
-    //             this.addStreamToScreen(this.myScreen, this.myScreen.id);
-    //     })
-    // }
+    screenClicked() {
+        const btnScreenShare = document.getElementById('screen-button');
+        btnScreenShare.addEventListener('click', async () => {
+            ipcRenderer.send('open-modal');
+            // We cant send the sources on ipcRenderer.send cause this throw an exception. It doesnt support to send DOM objects.
+        })
+    }
 
 }
