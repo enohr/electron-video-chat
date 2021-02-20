@@ -9,11 +9,11 @@ app.get('/', (req, res) => {
 
 io.on('connection', socket => {
     socket.on('join-room', (roomId, id) => {
-        console.log(`Client:${id} joined the room`)
+        console.log(`Client:${id} joined the room ${roomId}`)
         socket.join(roomId)
         socket.to(roomId).emit('new-user', id)
         socket.on('disconnect', () => {
-            console.log(`Client:${id} left the room`)
+            console.log(`Client:${id} left the room ${roomId}`)
             socket.to(roomId).emit('user-disconnected', id)
         })
     })

@@ -3,9 +3,22 @@ const { app, BrowserWindow, ipcMain } = require('electron')
 let win, modalScreen;
 
 function createWindow () {
-  win = new BrowserWindow({
+  homeWindow = new BrowserWindow({
     width: 1080,
     height: 720,
+    autoHideMenuBar: true,
+    //fullscreen: true,
+    webPreferences: {
+      nodeIntegration: true,
+      enableRemoteModule: true
+    }
+  })
+
+  roomWindow = new BrowserWindow({
+    width: 1080,
+    height: 720,
+    autoHideMenuBar: true,
+    show: false,
     //fullscreen: true,
     webPreferences: {
       nodeIntegration: true,
@@ -19,6 +32,8 @@ function createWindow () {
     show: false,
     width: 1080,
     height: 720,
+    resizable: false,
+    autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true
     }
@@ -27,8 +42,8 @@ function createWindow () {
 
 
   modalScreen.loadFile('pages/modal-screen/index.html')
-  //win.loadFile('pages/home/index.html')
-  win.loadFile('pages/room-call/index.html')
+  homeWindow.loadFile('pages/home/index.html')
+  roomWindow.loadFile('pages/room-call/index.html')
 }
 
 app.whenReady().then(createWindow)
@@ -45,11 +60,17 @@ app.on('activate', () => {
   }
 })
 
-ipcMain.on('open-modal', (_, items) => {
+ipcMain.on('join-room', (_, roomId) => {
+  roomWindow.webContents.send('room-selected', roomId)
+  homeWindow.hide();
+  roomWindow.show();
+})
+
+ipcMain.on('open-modal', () => {
   modalScreen.show();
 })
 
 ipcMain.on('source-selected', (_, source) => {
-  win.webContents.send('screen-source', source)
+  roomWindow.webContents.send('screen-source', source)
   modalScreen.close();
 })

@@ -10,7 +10,7 @@ class View {
 
     createImageList(sources) {
         const div_wrapper = document.createElement('div');
-        div_wrapper.id = 'div-wrapper'
+        div_wrapper.classList.add('div-wrapper');
         sources.map(source => {
             const div = document.createElement('div');
             div.classList.add('image-wrapper')

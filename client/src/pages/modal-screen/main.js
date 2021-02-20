@@ -14,7 +14,13 @@ class Main {
     }
 
     async _init() {
-        this.sources = await desktopCapturer.getSources({ types: ['window', 'screen'] });
+        this.sources = await desktopCapturer.getSources({
+            types: ['window', 'screen'],
+            thumbnailSize: {
+                height: 1080,
+                width: 1920
+            }  
+        });
         this.view.renderList(this.sources);
         this.clickEvent();
     }
