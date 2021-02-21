@@ -21,6 +21,11 @@ class Main {
                 width: 1920
             }  
         });
+        this.sources = this.sources.filter(source => {
+            console.log(source.name);
+            // return !((source.name !== 'Video Chat - Room') || (source.name !== 'Share Window'))
+            return source.name !== 'Video Chat - Room' && source.name !== 'Home' && source.name !== 'Share Window'
+        })
         this.view.renderList(this.sources);
         this.clickEvent();
     }

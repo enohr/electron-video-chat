@@ -4,6 +4,7 @@ let win, modalScreen;
 
 function createWindow () {
   homeWindow = new BrowserWindow({
+    title: 'Home',
     width: 1080,
     height: 720,
     autoHideMenuBar: true,
@@ -15,6 +16,7 @@ function createWindow () {
   })
 
   roomWindow = new BrowserWindow({
+    title: 'Room call',
     width: 1080,
     height: 720,
     autoHideMenuBar: true,
@@ -27,6 +29,7 @@ function createWindow () {
   })
 
   modalScreen = new BrowserWindow({
+    title: 'Share Window',
     parent: win,
     modal: true,
     show: false,

@@ -6,7 +6,9 @@
     <script src="./index.js"></script>
     <title>Video Chat - Room</title>
     
+    <link rel="stylesheet" type="text/css" href="../../styles/css/all.css">
     <link rel="stylesheet" href="./styles/style.css" />
+
     <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js" defer></script>
     <script src="utils/media.js" defer></script>
     <script src="view.js" defer></script>
@@ -20,10 +22,15 @@
                 <div class="video-grid"></div>
             </div>
             <div class="controls">
-                <span id="microphone-button">MUTE</span>
-                <span id="camera-button">CAMERA</span>
-                <span id="screen-button">SCREEN SHARE</span>
-                <span>PARTICIPANTS</span>
+                <span id="microphone-button">
+                    <i class="fa fa-microphone fa-2x" title="Mute microphone" id="microphone-icon"></i>
+                </span>
+                <span id="camera-button">
+                    <i class="fas fa-video fa-2x" title="Disable Camera" id="video-icon"></i>
+                </span>
+                <span id="screen-button">
+                    <i class="fas fa-desktop fa-2x" title="Screen Share" id="screen-icon"></i>
+                </span>
                 <span id=leave-button>LEAVE</span>
             </div>
         </div>

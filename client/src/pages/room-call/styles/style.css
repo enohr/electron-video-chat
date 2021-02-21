@@ -7,7 +7,7 @@
 .main {
     height: 100vh;
     display: flex;
-    background-color: #23282B;
+    background-color: #1d1d1d;
 }
 
 .main-area {
@@ -77,6 +77,7 @@ video {
     justify-content: space-between;
     align-items: center;
 }
+
 
 .controls span {
     cursor: pointer;

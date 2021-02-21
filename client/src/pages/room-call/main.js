@@ -31,6 +31,9 @@ class Main {
         this.peer = await this.initPeer();
 
         this.myStream = await this.media.getDevices();
+        this.myStream.getVideoTracks()[0].enabled = false
+        this.myStream.getAudioTracks()[0].enabled = false
+
         this.addStreamToScreen();
         
         this.view.onLeaveClicked();
@@ -55,7 +58,16 @@ class Main {
     onMicrophoneClicked() {
         const cameraButton = document.getElementById('microphone-button')
         cameraButton.addEventListener('click', () => {
-            this.myStream.getAudioTracks()[0].enabled = !this.myStream.getAudioTracks()[0].enabled
+            const microphone = document.getElementById('microphone-icon')
+            const enabled = this.myStream.getAudioTracks()[0].enabled
+            this.myStream.getAudioTracks()[0].enabled = !enabled
+
+            if (enabled) {
+                microphone.className = 'fa fa-microphone-slash fa-2x';
+                return;
+            }
+            microphone.className = 'fa fa-microphone fa-2x';
+
         })
     }
 
@@ -67,7 +79,14 @@ class Main {
     onCameraClicked() {
         const cameraButton = document.getElementById('camera-button')
         cameraButton.addEventListener('click', () => {
-            this.myStream.getVideoTracks()[0].enabled = !this.myStream.getVideoTracks()[0].enabled
+            const camera = document.getElementById('video-icon')
+            const enabled = this.myStream.getVideoTracks()[0].enabled
+            this.myStream.getVideoTracks()[0].enabled = !enabled;
+            if (enabled) {
+                camera.className = 'fa fa-video-slash fa-2x';
+                return;
+            }
+            camera.className = 'fa fa-video fa-2x';
         })
     }
 
@@ -122,6 +141,7 @@ class Main {
     sourceSelected() {
         ipcRenderer.on('screen-source', async (_, {source}) => {
             this.myScreen = await this.media.getScreenShare(source);
+            this.myScreen.getVideoTracks()[0].enabled = true
             this.addStreamToScreen(this.myScreen)
         })
     }
