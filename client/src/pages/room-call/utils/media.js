@@ -21,8 +21,4 @@ class Media {
         }
         return await navigator.mediaDevices.getUserMedia(displayMediaOptions);
     }
-
-    async getSources() {
-        return await desktopCapturer.getSources({ types: ['window', 'screen'] });
-    }
 }

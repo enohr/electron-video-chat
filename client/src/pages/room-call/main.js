@@ -3,8 +3,9 @@ const { ipcRenderer } = require('electron')
 class Main {
 
     // constructor will receive all needed objects
-    constructor({media, view, socket, roomId}) {
+    constructor({media, mediaFake, view, socket, roomId}) {
         this.media = media;
+        this.mediaFake = mediaFake;
         this.view = view;
         this.socket = socket;
         this.peer = null;
@@ -16,7 +17,7 @@ class Main {
         this.myPeerId = null;
 
         this.isMyCameraActive = false;
-
+        this.sharingScreen = false;
         this.peers = []
     }
 
@@ -31,8 +32,11 @@ class Main {
         this.peer = await this.initPeer();
 
         this.myStream = await this.media.getDevices();
+        // this.myStream = this.mediaFake.fakeMediaStream();
+
+
         this.myStream.getVideoTracks()[0].enabled = false
-        this.myStream.getAudioTracks()[0].enabled = false
+        this.myStream.getAudioTracks()[0].enabled = false        
 
         this.addStreamToScreen();
         
@@ -99,14 +103,23 @@ class Main {
        })
   
        this.socket.on('new-user', userId => {
-            const call = peer.call(userId, this.myStream);
-            if (this.myScreen !== null) {
-                peer.call(userId, this.myScreen);
-            }
+           try {
+               const call = peer.call(userId, this.myStream);
+   
+               if (call) {
+                   call.on('stream', stream => {
+                       if (!this.peers.indexOf(stream.id)) {
+                           console.log("calling again same peer. ignore")
+                           return;
+                       } 
+                       this.peers.push(stream.id);
+                       this.addStreamToScreen(stream, userId);
+                   })
+               }
 
-            call.on('stream', stream => {
-                this.addStreamToScreen(stream, userId);
-            })
+           } catch (error) {
+               console.error(error);
+           }
        })
 
        this.socket.on('user-disconnected', (id) => {
@@ -131,6 +144,12 @@ class Main {
     screenClicked() {
         const btnScreenShare = document.getElementById('screen-button');
         btnScreenShare.addEventListener('click', async () => {
+            if (this.sharingScreen) {
+                this.peerScreen.destroy();
+                this.sharingScreen = false;
+                return;
+            }
+            this.sharingScreen = true;
             ipcRenderer.send('open-modal');
             // We cant send the sources on ipcRenderer.send cause this throw an exception. It doesnt support to send DOM objects.
         })
@@ -141,9 +160,33 @@ class Main {
     sourceSelected() {
         ipcRenderer.on('screen-source', async (_, {source}) => {
             this.myScreen = await this.media.getScreenShare(source);
-            this.myScreen.getVideoTracks()[0].enabled = true
+            this.peerScreen = await this.createScreenSharePeer();
             this.addStreamToScreen(this.myScreen)
         })
+    }
+
+    async createScreenSharePeer() {
+        const peer = await new Promise(resolve => {
+            resolve(new Peer(undefined, {
+                host: 'localhost',
+                path: '/',
+                port: '3001'
+            }));
+        });
+
+        peer.on('open', (id) => {
+            this.myPeerScreenId = id;
+            this.socket.emit('join-room', this.roomId, id)
+       })
+        peer.on('call', call => {
+            call.answer(this.myScreen);
+        })
+
+        this.socket.on('new-user', userId => {
+            peer.call(userId, this.myScreen);
+        })
+
+        return peer;
     }
 
 }

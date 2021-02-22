@@ -7,9 +7,10 @@ const onload = () => {
      
      const media = new Media();
      const view = new View();
+     const mediaFake = new FakeMedia();
      
      ipcRenderer.on('room-selected', (_, {roomId}) => {
-          Main.init({media, view, socket, roomId});
+          Main.init({media, mediaFake, view, socket, roomId});
      })
 
 
