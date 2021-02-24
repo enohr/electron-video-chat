@@ -13,8 +13,10 @@ class Main {
         this.roomId = roomId;
         
         this.myStream = null;
-        this.myScreen = null;
         this.myPeerId = null;
+
+        this.myScreen = null;
+        this.myPeerScreenId = null;
 
         this.isMyCameraActive = false;
         this.sharingScreen = false;
@@ -33,7 +35,6 @@ class Main {
 
         this.myStream = await this.media.getDevices();
         // this.myStream = this.mediaFake.fakeMediaStream();
-
 
         this.myStream.getVideoTracks()[0].enabled = false
         this.myStream.getAudioTracks()[0].enabled = false        
@@ -98,8 +99,8 @@ class Main {
     async peerEvents(peer) {
         // Create a peer model in future. testing the api right now
         peer.on('open', (id) => {
-            this.myPeerId = id;
             this.socket.emit('join-room', this.roomId, id)
+            this.myPeerId = id;
        })
   
        this.socket.on('new-user', userId => {
@@ -138,6 +139,10 @@ class Main {
             })
        })
 
+       this.socket.on('screen-share-leave', id => {
+           this.view.removeVideo(id);
+       })
+
        return peer;
     }
 
@@ -145,8 +150,11 @@ class Main {
         const btnScreenShare = document.getElementById('screen-button');
         btnScreenShare.addEventListener('click', async () => {
             if (this.sharingScreen) {
-                this.peerScreen.destroy();
+                console.log(this.socket);
                 this.sharingScreen = false;
+                this.peerScreen.destroy();
+                this.socket.emit('screen-leaved', this.myPeerScreenId)
+                // Maybe has an better way. Now, the socket handle two peers, so we send the peerID to others sockets to remove from your video grid
                 return;
             }
             this.sharingScreen = true;
@@ -161,7 +169,8 @@ class Main {
         ipcRenderer.on('screen-source', async (_, {source}) => {
             this.myScreen = await this.media.getScreenShare(source);
             this.peerScreen = await this.createScreenSharePeer();
-            this.addStreamToScreen(this.myScreen)
+            this.addStreamToScreen(this.myScreen, 'my-video')
+            // peerId of the screen is not working. idk why yet
         })
     }
 
@@ -175,8 +184,8 @@ class Main {
         });
 
         peer.on('open', (id) => {
-            this.myPeerScreenId = id;
             this.socket.emit('join-room', this.roomId, id)
+            this.myPeerScreenId = id;
        })
         peer.on('call', call => {
             call.answer(this.myScreen);
@@ -184,6 +193,10 @@ class Main {
 
         this.socket.on('new-user', userId => {
             peer.call(userId, this.myScreen);
+        })
+
+        peer.on('close', () => {
+            this.view.removeVideo('my-video');
         })
 
         return peer;

@@ -16,6 +16,10 @@ io.on('connection', socket => {
             console.log(`Client:${id} left the room ${roomId}`)
             socket.to(roomId).emit('user-disconnected', id)
         })
+        socket.on('screen-leaved', id => {
+            console.log(`Screen:${id} left the room ${roomId}`)
+            socket.to(roomId).emit('screen-share-leave', id);
+        })
     })
 
     
