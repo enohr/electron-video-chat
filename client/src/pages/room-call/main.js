@@ -8,19 +8,21 @@ class Main {
         this.mediaFake = mediaFake;
         this.view = view;
         this.socket = socket;
-        this.peer = null;
-
+        
         this.roomId = roomId;
         
-        this.myStream = null;
-        this.myPeerId = null;
+        this.myCurrentMediaStream = null;
+        this.myCurrentPeer = null;
+        this.myCurrentPeerId = null;
 
-        this.myScreen = null;
-        this.myPeerScreenId = null;
+        this.myCurrentMediaScreen = null;
+        this.myCurrentPeerScreen = null;
+        this.myCurrentPeerScreenId = null;
 
         this.isMyCameraActive = false;
-        this.sharingScreen = false;
-        this.peers = []
+        this.isSharingScreen = false;
+
+        this.allPeersList = []
     }
 
 
@@ -31,13 +33,13 @@ class Main {
     }
 
     async _init() {
-        this.peer = await this.initPeer();
+        this.myCurrentPeer = await this.initPeer();
 
-        this.myStream = await this.media.getDevices();
+        this.myCurrentMediaStream = await this.media.getDevices();
         // this.myStream = this.mediaFake.fakeMediaStream();
 
-        this.myStream.getVideoTracks()[0].enabled = false
-        this.myStream.getAudioTracks()[0].enabled = false        
+        this.myCurrentMediaStream.getVideoTracks()[0].enabled = false
+        this.myCurrentMediaStream.getAudioTracks()[0].enabled = false        
 
         this.addStreamToScreen();
         
@@ -64,8 +66,8 @@ class Main {
         const cameraButton = document.getElementById('microphone-button')
         cameraButton.addEventListener('click', () => {
             const microphone = document.getElementById('microphone-icon')
-            const enabled = this.myStream.getAudioTracks()[0].enabled
-            this.myStream.getAudioTracks()[0].enabled = !enabled
+            const enabled = this.myCurrentMediaStream.getAudioTracks()[0].enabled
+            this.myCurrentMediaStream.getAudioTracks()[0].enabled = !enabled
 
             if (enabled) {
                 microphone.className = 'fa fa-microphone-slash fa-2x';
@@ -76,17 +78,17 @@ class Main {
         })
     }
 
-    addStreamToScreen(stream = this.myStream, peerId = this.myPeerId) {
-        const isCurrentUser = this.myPeerId == peerId;
+    addStreamToScreen(stream = this.myCurrentMediaStream, peerId = this.myCurrentPeerId) {
+        const isCurrentUser = this.myCurrentPeerId == peerId;
         this.view.addCameraToScreen(stream, peerId, isCurrentUser);
-}
+    }
 
     onCameraClicked() {
         const cameraButton = document.getElementById('camera-button')
         cameraButton.addEventListener('click', () => {
             const camera = document.getElementById('video-icon')
-            const enabled = this.myStream.getVideoTracks()[0].enabled
-            this.myStream.getVideoTracks()[0].enabled = !enabled;
+            const enabled = this.myCurrentMediaStream.getVideoTracks()[0].enabled
+            this.myCurrentMediaStream.getVideoTracks()[0].enabled = !enabled;
             if (enabled) {
                 camera.className = 'fa fa-video-slash fa-2x';
                 return;
@@ -96,68 +98,19 @@ class Main {
     }
 
 
-    async peerEvents(peer) {
-        // Create a peer model in future. testing the api right now
-        peer.on('open', (id) => {
-            this.socket.emit('join-room', this.roomId, id)
-            this.myPeerId = id;
-       })
-  
-       this.socket.on('new-user', userId => {
-           try {
-               const call = peer.call(userId, this.myStream);
-   
-               if (call) {
-                   call.on('stream', stream => {
-                       if (!this.peers.indexOf(stream.id)) {
-                           console.log("calling again same peer. ignore")
-                           return;
-                       } 
-                       this.peers.push(stream.id);
-                       this.addStreamToScreen(stream, userId);
-                   })
-               }
-
-           } catch (error) {
-               console.error(error);
-           }
-       })
-
-       this.socket.on('user-disconnected', (id) => {
-           this.view.removeVideo(id);
-       })
-  
-       peer.on('call', call => {
-            call.answer(this.myStream);
-            call.on('stream', stream => {
-                if (!this.peers.indexOf(stream.id)) {
-                    console.log("calling again same peer. ignore")
-                    return;
-                } 
-                this.peers.push(stream.id);
-                this.addStreamToScreen(stream, call.peer);
-            })
-       })
-
-       this.socket.on('screen-share-leave', id => {
-           this.view.removeVideo(id);
-       })
-
-       return peer;
-    }
 
     screenClicked() {
         const btnScreenShare = document.getElementById('screen-button');
         btnScreenShare.addEventListener('click', async () => {
-            if (this.sharingScreen) {
+            if (this.isSharingScreen) {
                 console.log(this.socket);
-                this.sharingScreen = false;
-                this.peerScreen.destroy();
-                this.socket.emit('screen-leaved', this.myPeerScreenId)
+                this.isSharingScreen = false;
+                this.myCurrentPeer.destroy();
+                this.socket.emit('screen-leaved', this.myCurrentPeerScreenId)
                 // Maybe has an better way. Now, the socket handle two peers, so we send the peerID to others sockets to remove from your video grid
                 return;
             }
-            this.sharingScreen = true;
+            this.isSharingScreen = true;
             ipcRenderer.send('open-modal');
             // We cant send the sources on ipcRenderer.send cause this throw an exception. It doesnt support to send DOM objects.
         })
@@ -167,9 +120,9 @@ class Main {
 
     sourceSelected() {
         ipcRenderer.on('screen-source', async (_, {source}) => {
-            this.myScreen = await this.media.getScreenShare(source);
-            this.peerScreen = await this.createScreenSharePeer();
-            this.addStreamToScreen(this.myScreen, 'my-video')
+            this.myCurrentMediaScreen = await this.media.getScreenShare(source);
+            this.myCurrentPeer = await this.createScreenSharePeer();
+            this.addStreamToScreen(this.myCurrentMediaScreen, 'my-video')
             // peerId of the screen is not working. idk why yet
         })
     }
@@ -184,15 +137,15 @@ class Main {
         });
 
         peer.on('open', (id) => {
-            this.socket.emit('join-room', this.roomId, id)
-            this.myPeerScreenId = id;
+            this.onPeerOpen(id);
        })
+
         peer.on('call', call => {
-            call.answer(this.myScreen);
+            call.answer(this.myCurrentMediaScreen);
         })
 
         this.socket.on('new-user', userId => {
-            peer.call(userId, this.myScreen);
+            peer.call(userId, this.myCurrentMediaScreen);
         })
 
         peer.on('close', () => {
@@ -200,6 +153,64 @@ class Main {
         })
 
         return peer;
+    }
+
+    async peerEvents(peer) {
+        // Create a peer model in future. testing the api right now
+        peer.on('open', userId => {
+            this.onPeerOpen(userId);
+        });
+  
+       this.socket.on('new-user', userId => {
+           this.onSocketNewUser(userId);
+       })
+
+       this.socket.on('user-disconnected', (id) => {
+           this.view.removeVideo(id);
+       })
+  
+       peer.on('call', call => {
+            this.onPeerOnCall(call);
+       })
+
+       this.socket.on('screen-share-leave', id => {
+           this.view.removeVideo(id);
+       })
+
+       return peer;
+    }
+
+    // Events 
+    onPeerOpen(userId) {
+        this.socket.emit('join-room', this.roomId, userId)
+        this.myCurrentPeerId = id;
+    }
+
+    onSocketNewUser(userId) {
+        const call = peer.call(userId, this.myCurrentMediaStream);
+
+        if (call) {
+            call.on('stream', stream => {
+                if (!this.allPeersList.indexOf(stream.id)) {
+                    console.log("calling again same peer. ignore")
+                    return;
+                } 
+                this.allPeersList.push(stream.id);
+                this.addStreamToScreen(stream, userId);
+            })
+        }
+    }
+
+    onPeerOnCall(call){
+        call.answer(this.myCurrentMediaStream);
+        call.on('stream', stream => {
+            if (!this.allPeersList.indexOf(stream.id)) {
+                console.log("calling again same peer. ignore")
+                return;
+            } 
+            this.allPeersList.push(stream.id);
+            this.addStreamToScreen(stream, call.peer);
+        })
     }
 
 }
