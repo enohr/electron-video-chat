@@ -35,19 +35,15 @@ class Main {
     async _init() {
         this.myCurrentPeer = await this.initPeer();
 
-        this.myCurrentMediaStream = await this.media.getDevices();
         // this.myStream = this.mediaFake.fakeMediaStream();
-
-        this.myCurrentMediaStream.getVideoTracks()[0].enabled = false
-        this.myCurrentMediaStream.getAudioTracks()[0].enabled = false        
-
-        this.addStreamToScreen();
+        this.myCurrentMediaStream = await this.startMediaStream();
         
         this.view.onLeaveClicked();
-        this.onCameraClicked();
-        this.onMicrophoneClicked()
-        this.screenClicked();
         this.sourceSelected();
+
+        this.view.setCameraOnClick(this.onCameraClicked.bind(this))
+        this.view.setMicrophoneOnClick(this.onMicrophoneClicked.bind(this));
+        this.view.setScreenShareOnClick(this.onScreenClicked.bind(this));
     }
 
     async initPeer() {
@@ -62,60 +58,38 @@ class Main {
         return this.peerEvents(peer);
     }
 
-    onMicrophoneClicked() {
-        const cameraButton = document.getElementById('microphone-button')
-        cameraButton.addEventListener('click', () => {
-            const microphone = document.getElementById('microphone-icon')
-            const enabled = this.myCurrentMediaStream.getAudioTracks()[0].enabled
-            this.myCurrentMediaStream.getAudioTracks()[0].enabled = !enabled
+    async startMediaStream() {
+        const mediaStream = await this.media.getDevices();
+        mediaStream.getVideoTracks()[0].enabled = false
+        mediaStream.getAudioTracks()[0].enabled = false        
 
-            if (enabled) {
-                microphone.className = 'fa fa-microphone-slash fa-2x';
-                return;
-            }
-            microphone.className = 'fa fa-microphone fa-2x';
-
-        })
+        this.addStreamToScreen(mediaStream);
+        return mediaStream;
     }
 
-    addStreamToScreen(stream = this.myCurrentMediaStream, peerId = this.myCurrentPeerId) {
-        const isCurrentUser = this.myCurrentPeerId == peerId;
-        this.view.addCameraToScreen(stream, peerId, isCurrentUser);
+    onMicrophoneClicked() {
+        const enabled = this.myCurrentMediaStream.getAudioTracks()[0].enabled
+        this.myCurrentMediaStream.getAudioTracks()[0].enabled = !enabled
+        return enabled;
     }
 
     onCameraClicked() {
-        const cameraButton = document.getElementById('camera-button')
-        cameraButton.addEventListener('click', () => {
-            const camera = document.getElementById('video-icon')
-            const enabled = this.myCurrentMediaStream.getVideoTracks()[0].enabled
-            this.myCurrentMediaStream.getVideoTracks()[0].enabled = !enabled;
-            if (enabled) {
-                camera.className = 'fa fa-video-slash fa-2x';
-                return;
-            }
-            camera.className = 'fa fa-video fa-2x';
-        })
+        const enabled = this.myCurrentMediaStream.getVideoTracks()[0].enabled
+        this.myCurrentMediaStream.getVideoTracks()[0].enabled = !enabled;
+        return enabled;
     }
 
-
-
-    screenClicked() {
-        const btnScreenShare = document.getElementById('screen-button');
-        btnScreenShare.addEventListener('click', async () => {
-            if (this.isSharingScreen) {
-                console.log(this.socket);
-                this.isSharingScreen = false;
-                this.myCurrentPeer.destroy();
-                this.socket.emit('screen-leaved', this.myCurrentPeerScreenId)
-                // Maybe has an better way. Now, the socket handle two peers, so we send the peerID to others sockets to remove from your video grid
-                return;
-            }
-            this.isSharingScreen = true;
-            ipcRenderer.send('open-modal');
-            // We cant send the sources on ipcRenderer.send cause this throw an exception. It doesnt support to send DOM objects.
-        })
-
-
+    onScreenClicked() {
+        if (this.isSharingScreen) {
+            this.isSharingScreen = false;
+            this.myCurrentPeer.destroy();
+            this.socket.emit('screen-leaved', this.myCurrentPeerScreenId)
+            // Maybe has an better way. Now, the socket handle two peers, so we send the peerID to others sockets to remove from your video grid
+            return;
+        }
+        this.isSharingScreen = true;
+        ipcRenderer.send('open-modal');
+        // We cant send the sources on ipcRenderer.send cause this throw an exception. It doesnt support to send DOM objects.
     }
 
     sourceSelected() {
@@ -125,6 +99,11 @@ class Main {
             this.addStreamToScreen(this.myCurrentMediaScreen, 'my-video')
             // peerId of the screen is not working. idk why yet
         })
+    }
+
+    addStreamToScreen(stream = this.myCurrentMediaStream, peerId = this.myCurrentPeerId) {
+        const isCurrentUser = this.myCurrentPeerId == peerId;
+        this.view.addCameraToScreen(stream, peerId, isCurrentUser);
     }
 
     async createScreenSharePeer() {
@@ -183,7 +162,7 @@ class Main {
     // Events 
     onPeerOpen(userId) {
         this.socket.emit('join-room', this.roomId, userId)
-        this.myCurrentPeerId = id;
+        this.myCurrentPeerId = userId;
     }
 
     onSocketNewUser(userId) {
